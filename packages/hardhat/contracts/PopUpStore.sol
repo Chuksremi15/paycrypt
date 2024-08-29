@@ -18,8 +18,6 @@ contract PopUpStore {
 	address public immutable owner;
 	mapping(string => address) public tokenOptions;
 
-	IERC20 testToken;
-
 	// Events: a way to emit log statements from smart contract that can be listened to by external parties
 	event PaymentReceive(
 		address indexed payersAddress,
@@ -40,9 +38,8 @@ contract PopUpStore {
 
 	// Constructor: Called once on contract deployment
 	// Check packages/hardhat/deploy/00_deploy_your_contract.ts
-	constructor(address _owner, address _token_addr) {
+	constructor(address _owner) {
 		owner = _owner;
-		testToken = IERC20(_token_addr);
 	}
 
 	// Modifier: used to define a set of rules that must be met before or after a function is executed

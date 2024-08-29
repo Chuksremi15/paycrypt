@@ -7,19 +7,22 @@ import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 describe("PopUpStore", function () {
   // We define a fixture to reuse the same setup in every test.
 
+  const zeroAddress = "0x0000000000000000000000000000000000000000";
+
   let popUpStore: PopUpStore;
   let crypt: Crypt;
   let owner: HardhatEthersSigner;
+  let user2: HardhatEthersSigner;
 
   before(async () => {
-    [owner] = await ethers.getSigners();
+    [owner, user2] = await ethers.getSigners();
     const popUpStoreFactory = await ethers.getContractFactory("PopUpStore");
     const cryptFactory = await ethers.getContractFactory("Crypt");
 
     let cryptContract = (await cryptFactory.deploy()) as Crypt;
     crypt = await cryptContract.waitForDeployment();
 
-    popUpStore = (await popUpStoreFactory.deploy(owner.address, crypt.target)) as PopUpStore;
+    popUpStore = (await popUpStoreFactory.deploy(owner.address)) as PopUpStore;
     popUpStore = await popUpStore.waitForDeployment();
   });
 
@@ -45,5 +48,12 @@ describe("PopUpStore", function () {
       await popUpStore.payForProduct(ethers.parseEther("400"), "Crypt", "123456789bb");
       expect(await popUpStore.getTokenBalance("Crypt")).to.equal(ethers.parseEther("400"));
     });
+
+    it("Should allow removing token for payment", async function () {
+      await popUpStore.removePaymentToken("Crypt", crypt.target);
+      expect(await popUpStore.tokenOptions("Crypt")).to.be.equal(zeroAddress);
+    });
+
+    //expect(tx1, "ethToToken should revert before initalization").not.to.be.reverted;
   });
 });

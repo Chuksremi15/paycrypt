@@ -18,23 +18,43 @@ contract PopUpStore {
 	address public immutable owner;
 	mapping(string => address) public tokenOptions;
 
+	struct tokenArray {
+		string tokenName;
+		address tokenAddress;
+	}
+
+	tokenArray[] public tokensArray;
+
 	// Events: a way to emit log statements from smart contract that can be listened to by external parties
 	event PaymentReceive(
 		address indexed payersAddress,
 		string txDetails,
 		string indexed productId,
 		uint256 amount,
-		address indexed tokenAddress
+		address indexed tokenAddress,
+		uint256 timestamp
 	);
 
 	// Events: emit when payment token is added
-	event tokenAdded(string indexed tokenName, address indexed tokenAddress);
+	event tokenAdded(
+		string indexed tokenName,
+		address indexed tokenAddress,
+		uint256 timestamp
+	);
 
 	// Events: emit when payment token is remove
-	event tokenRemove(string indexed tokenName, address indexed tokenAddress);
+	event tokenRemove(
+		string indexed tokenName,
+		address indexed tokenAddress,
+		uint256 timestamp
+	);
 
 	// Events: emit when token is withdrawn
-	event tokenWithdrawn(string indexed tokenName, uint256 amount);
+	event tokenWithdrawn(
+		string indexed tokenName,
+		uint256 amount,
+		uint256 timestamp
+	);
 
 	// Constructor: Called once on contract deployment
 	// Check packages/hardhat/deploy/00_deploy_your_contract.ts
@@ -80,7 +100,8 @@ contract PopUpStore {
 			"Payment Received",
 			_productId,
 			_amount,
-			tokenAddress
+			tokenAddress,
+			block.timestamp
 		);
 	}
 
@@ -99,13 +120,10 @@ contract PopUpStore {
 		IERC20 token = IERC20(tokenAddress);
 
 		//withdraw token
-		require(
-			token.transferFrom(address(this), msg.sender, _amount),
-			"payment reverted"
-		);
+		require(token.transfer(msg.sender, _amount), "payment reverted");
 
 		// emit event for token withdraw
-		emit tokenWithdrawn(_token_name, _amount);
+		emit tokenWithdrawn(_token_name, _amount, block.timestamp);
 	}
 
 	/**
@@ -137,9 +155,12 @@ contract PopUpStore {
 	) public isOwner {
 		require(_token_address != address(0), "Token not found");
 		tokenOptions[_token_name] = _token_address;
+		tokensArray.push(
+			tokenArray({ tokenName: _token_name, tokenAddress: _token_address })
+		);
 
 		// emit when token is added
-		emit tokenAdded(_token_name, _token_address);
+		emit tokenAdded(_token_name, _token_address, block.timestamp);
 	}
 
 	/**
@@ -150,13 +171,29 @@ contract PopUpStore {
 	 */
 	function removePaymentToken(
 		string memory _token_name,
-		address _token_address
+		address _token_address,
+		uint256 index
 	) public isOwner {
 		require(tokenOptions[_token_name] != address(0), "Token not found");
+		require(index < tokensArray.length, "Token does not exist");
+
+		// Swap the token to delete with the last token
+		tokensArray[index] = tokensArray[tokensArray.length - 1];
+
+		tokensArray.pop();
+
 		delete tokenOptions[_token_name];
 
 		// emit when token is added
-		emit tokenRemove(_token_name, _token_address);
+		emit tokenRemove(_token_name, _token_address, block.timestamp);
+	}
+
+	/**
+	 * Function to get all the values of the tokensArray
+	 */
+
+	function getPaymentTokens() public view returns (tokenArray[] memory) {
+		return tokensArray;
 	}
 
 	/**

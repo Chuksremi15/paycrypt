@@ -346,6 +346,12 @@ const deployedContracts = {
               name: "tokenAddress",
               type: "address",
             },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "timestamp",
+              type: "uint256",
+            },
           ],
           name: "PaymentReceive",
           type: "event",
@@ -364,6 +370,12 @@ const deployedContracts = {
               internalType: "address",
               name: "tokenAddress",
               type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "timestamp",
+              type: "uint256",
             },
           ],
           name: "tokenAdded",
@@ -384,6 +396,12 @@ const deployedContracts = {
               name: "tokenAddress",
               type: "address",
             },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "timestamp",
+              type: "uint256",
+            },
           ],
           name: "tokenRemove",
           type: "event",
@@ -401,6 +419,12 @@ const deployedContracts = {
               indexed: false,
               internalType: "uint256",
               name: "amount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "timestamp",
               type: "uint256",
             },
           ],
@@ -423,6 +447,31 @@ const deployedContracts = {
           name: "addPaymentToken",
           outputs: [],
           stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getPaymentTokens",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "string",
+                  name: "tokenName",
+                  type: "string",
+                },
+                {
+                  internalType: "address",
+                  name: "tokenAddress",
+                  type: "address",
+                },
+              ],
+              internalType: "struct PopUpStore.tokenArray[]",
+              name: "",
+              type: "tuple[]",
+            },
+          ],
+          stateMutability: "view",
           type: "function",
         },
         {
@@ -492,6 +541,11 @@ const deployedContracts = {
               name: "_token_address",
               type: "address",
             },
+            {
+              internalType: "uint256",
+              name: "index",
+              type: "uint256",
+            },
           ],
           name: "removePaymentToken",
           outputs: [],
@@ -511,6 +565,30 @@ const deployedContracts = {
             {
               internalType: "address",
               name: "",
+              type: "address",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "tokensArray",
+          outputs: [
+            {
+              internalType: "string",
+              name: "tokenName",
+              type: "string",
+            },
+            {
+              internalType: "address",
+              name: "tokenAddress",
               type: "address",
             },
           ],

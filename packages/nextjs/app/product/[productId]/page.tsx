@@ -53,7 +53,7 @@ export const Button = ({
   text: string;
   padding?: string;
   loading?: boolean;
-  action?: () => void;
+  action?: () => Promise<void> | (() => void);
   isDarkMode: boolean;
 }) => {
   return (

@@ -50,7 +50,7 @@ describe("PopUpStore", function () {
     });
 
     it("Should allow removing token for payment", async function () {
-      await popUpStore.removePaymentToken("Crypt", crypt.target);
+      await popUpStore.removePaymentToken("Crypt", crypt.target, 0);
       expect(await popUpStore.tokenOptions("Crypt")).to.be.equal(zeroAddress);
     });
 

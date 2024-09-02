@@ -14,6 +14,13 @@ import { notification } from "~~/utils/scaffold-eth";
 const Page: NextPage = () => {
   const params = useParams<{ tag: string; itemId: string }>();
 
+  const itemObj = {
+    name: "Vamtac Graphic Tees Mens Vintage Oversized T Shirts",
+    imgurl: "/store/shirt.jpg",
+    description:
+      "Soft and comfortable: Made of 100% pure cotton, this t shirt is soft, lightweight and comfortable to wear. The natural material is breathable, helping to regulate body temperature and preventing sweat buildup.",
+  };
+
   const { resolvedTheme } = useTheme();
   const isDarkMode = resolvedTheme === "dark";
   const { writeContractAsync: writeYourContractAsyncStore } = useScaffoldWriteContract("PopUpStore");
@@ -52,6 +59,8 @@ const Page: NextPage = () => {
   }
 
   const handlePayment = async () => {
+    setPaymentLoading(true);
+
     try {
       console.log("form values: ", paymentForm);
 
@@ -72,7 +81,6 @@ const Page: NextPage = () => {
         setPaymentLoading(false);
       } else {
         if (paymentForm.tokenIndex) {
-          setPaymentLoading(true);
           await writeYourContractAsyncToken({
             functionName: "approve",
             args: [popUpStoreData?.address, productPrice],
@@ -100,18 +108,15 @@ const Page: NextPage = () => {
     <div className="container mx-auto max-w-4xl py-8 px-8">
       <div className="grid grid-cols-1 gap-x-6 gap-y-8 md:grid-cols-2 ">
         <div className="relative w-full h-[300px] lg:h-[400px]">
-          <img className="w-full h-full object-cover" alt="art work" width={400} height={400} src="/store/shirt.jpg" />
+          <img className="w-full h-full object-cover" alt="art work" width={400} height={400} src={itemObj.imgurl} />
         </div>
         <div className="">
-          <h4 className="font-heading text-xl opacity-80">Vamtac Graphic Tees Mens Vintage Oversized T Shirts</h4>
+          <h4 className="font-heading text-xl opacity-80">{itemObj.name}</h4>
           <p className="font-body text-2xl">
             $ {productPrice && Number(formatEther(productPrice)) > 0 ? formatEther(productPrice) : "0"}
           </p>
           <p className="text-body text-lg">About this item</p>
-          <p className="text-body">
-            Soft and comfortable: Made of 100% pure cotton, this t shirt is soft, lightweight and comfortable to wear.
-            The natural material is breathable, helping to regulate body temperature and preventing sweat buildup.
-          </p>
+          <p className="text-body">{itemObj.description}</p>
 
           <div className="flex flex-col gap-y-2">
             <TextSelect

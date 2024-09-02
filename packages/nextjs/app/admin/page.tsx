@@ -50,7 +50,7 @@ const Page: NextPage = () => {
   const onPriceChange = (value: string, formKey: string) => {
     setPriceForm(form => ({ ...form, [formKey]: value }));
   };
-  const onWithdrawChange = (value: string | bigint, formKey: string) => {
+  const onWithdrawChange = (value: string, formKey: string) => {
     setWithdrawTokenForm(form => ({ ...form, [formKey]: value }));
   };
 
@@ -70,26 +70,31 @@ const Page: NextPage = () => {
   };
 
   const handleWithdrawToken = async () => {
+    setWithdrawTokenLoading(true);
+
     try {
-      setWithdrawTokenLoading(true);
+      if (tokens && Number(withdrawTokenForm.tokenIndex) === tokens?.length) {
+        await writeYourContractAsync({
+          functionName: "withdrawEth",
+          args: [parseEther(withdrawTokenForm.amount)],
+        });
 
-      console.log("form values: ", withdrawTokenForm.tokenIndex, parseEther(withdrawTokenForm.amount));
+        setWithdrawTokenLoading(false);
+      } else {
+        await writeYourContractAsync({
+          functionName: "withdrawToken",
+          args: [BigInt(withdrawTokenForm.tokenIndex), parseEther(withdrawTokenForm.amount)],
+        });
 
-      await writeYourContractAsync({
-        functionName: "withdrawToken",
-        args: [BigInt(withdrawTokenForm.tokenIndex), parseEther(withdrawTokenForm.amount)],
-      });
-
-      setWithdrawTokenLoading(false);
+        setWithdrawTokenLoading(false);
+      }
     } catch (e) {
-      console.error("Error setting:", e);
       setWithdrawTokenLoading(false);
     }
   };
 
   const handleSetPrice = async () => {
     try {
-      console.log(priceForm.productId, priceForm.amount);
       setPriceLoading(true);
 
       await writeYourContractAsync({
@@ -99,7 +104,6 @@ const Page: NextPage = () => {
 
       setPriceLoading(false);
     } catch (e) {
-      console.error("Error setting:", e);
       setPriceLoading(false);
     }
   };
@@ -160,7 +164,7 @@ const Page: NextPage = () => {
                 name="tokenIndex"
                 isDarkMode={isDarkMode}
                 value={withdrawTokenForm.tokenIndex}
-                onChange={onTokenChange}
+                onChange={onWithdrawChange}
                 tokens={tokens}
               />
 

@@ -8,6 +8,9 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 // Use openzeppelin to inherit battle-tested implementations (ERC20, ERC721, etc)
 // import "@openzeppelin/contracts/access/Ownable.sol";
 
+// Import the Chainlink Aggregator interface
+import { AggregatorV3Interface } from "@chainlink/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+
 /**
  * A smart contract that allows changing a state variable of the contract and tracking the changes
  * It also allows the owner to withdraw the Ether in the contract
@@ -16,22 +19,26 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract PopUpStore {
 	// State Variables
 	address public immutable owner;
-	mapping(string => address) public tokenOptions;
 
-	struct tokenArray {
+	AggregatorV3Interface internal dataFeed;
+
+	struct TokenArray {
 		string tokenName;
 		address tokenAddress;
 	}
 
-	tokenArray[] public tokensArray;
+	mapping(string => uint256) public itemPrice;
+
+	TokenArray[] public tokensArray;
 
 	// Events: a way to emit log statements from smart contract that can be listened to by external parties
 	event PaymentReceive(
 		address indexed payersAddress,
 		string txDetails,
-		string indexed productId,
+		string indexed itemId,
 		uint256 amount,
-		address indexed tokenAddress,
+		string indexed tokenName,
+		address tokenAddress,
 		uint256 timestamp
 	);
 
@@ -58,8 +65,32 @@ contract PopUpStore {
 
 	// Constructor: Called once on contract deployment
 	// Check packages/hardhat/deploy/00_deploy_your_contract.ts
-	constructor(address _owner) {
+	constructor(
+		address _owner,
+		address _aggregator_address,
+		string memory _token_name,
+		address _token_address
+	) {
 		owner = _owner;
+		dataFeed = AggregatorV3Interface(_aggregator_address);
+		tokensArray.push(
+			TokenArray({ tokenName: _token_name, tokenAddress: _token_address })
+		);
+	}
+
+	/**
+	 * Returns the latest answer for eth price.
+	 */
+	function getChainlinkDataFeedLatestAnswer() public view returns (int) {
+		// prettier-ignore
+		(
+            /* uint80 roundID */,
+            int answer,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
+        ) = dataFeed.latestRoundData();
+		return answer;
 	}
 
 	// Modifier: used to define a set of rules that must be met before or after a function is executed
@@ -74,19 +105,21 @@ contract PopUpStore {
 	 * Function that allows anyone to pay for an item
 	 *
 	 * @param _amount (unit256 memory) - amount pegged to USD to be paid by user
-	 * @param _token_name (string memory) - token address of the token the contracts receive payment in
-	 * @param _productId (string memory) - productId to be paid for
+	 * @param _token_index (string memory) - token index of the token the contracts receive payment in
+	 * @param _itemId (string memory) - itemId to be paid for
 	 */
 
-	function payForProduct(
+	function payWithToken(
 		uint256 _amount,
-		string memory _token_name,
-		string memory _productId
+		uint256 _token_index,
+		string memory _itemId
 	) public {
-		address tokenAddress = tokenOptions[_token_name];
-		require(tokenAddress != address(0), "Token not found");
+		require(_token_index < tokensArray.length, "Token not found");
+		require(_amount >= itemPrice[_itemId], "Insufficient _amount");
 
-		IERC20 token = IERC20(tokenAddress);
+		TokenArray memory token_ = tokensArray[_token_index];
+
+		IERC20 token = IERC20(token_.tokenAddress);
 
 		//transfer token
 		require(
@@ -98,11 +131,45 @@ contract PopUpStore {
 		emit PaymentReceive(
 			msg.sender,
 			"Payment Received",
-			_productId,
+			_itemId,
 			_amount,
-			tokenAddress,
+			token_.tokenName,
+			token_.tokenAddress,
 			block.timestamp
 		);
+	}
+
+	/**
+	 * Function that allows anyone to pay for an item with ETH
+	 * @param _itemId (string memory) - itemId to be paid for
+	 */
+
+	function payWithEth(string memory _itemId) public payable {
+		require(msg.value > 0, "Value can not be zero");
+
+		int ethPrice = getChainlinkDataFeedLatestAnswer();
+		uint256 price = itemPrice[_itemId];
+
+		uint256 valueInEth = safeDivision(price, ethPrice);
+
+		require(msg.value >= valueInEth, "Insufficient msg.value");
+
+		// emit: keyword used to trigger an event
+		emit PaymentReceive(
+			msg.sender,
+			"Payment Received",
+			_itemId,
+			msg.value,
+			"ETH",
+			msg.sender,
+			block.timestamp
+		);
+	}
+
+	function safeDivision(uint256 a, int256 b) public pure returns (uint256) {
+		require(b > 0, "Division by zero or negative number"); // Ensure b is positive
+		uint256 result = a / uint256(b);
+		return result;
 	}
 
 	/**
@@ -110,36 +177,37 @@ contract PopUpStore {
 	 * The function can only be called by the owner of the contract as defined by the isOwner modifier
 	 */
 	function withdrawToken(
-		string memory _token_name,
+		uint256 _token_index,
 		uint256 _amount
 	) public isOwner {
-		address tokenAddress = tokenOptions[_token_name];
-		require(tokenAddress != address(0), "Token not found");
+		require(_token_index < tokensArray.length, "Token not found");
 		require(_amount > 0, "cannot withdraw 0 token");
 
-		IERC20 token = IERC20(tokenAddress);
+		TokenArray memory token_ = tokensArray[_token_index];
+
+		IERC20 token = IERC20(token_.tokenAddress);
 
 		//withdraw token
 		require(token.transfer(msg.sender, _amount), "payment reverted");
 
 		// emit event for token withdraw
-		emit tokenWithdrawn(_token_name, _amount, block.timestamp);
+		emit tokenWithdrawn(token_.tokenName, _amount, block.timestamp);
 	}
 
 	/**
 	 * Function to check the token balance of this contract
 	 *
-	 * @param _token_name (string memory) - name of token to check balance
+	 * @param _token_index (string memory) - name of token to check balance
 	 */
 	function getTokenBalance(
-		string memory _token_name
+		uint256 _token_index
 	) public view returns (uint256) {
-		address tokenAddress = tokenOptions[_token_name];
-		require(tokenAddress != address(0), "Token not found");
+		require(_token_index < tokensArray.length, "Token not found");
 
-		IERC20 token = IERC20(tokenAddress);
+		TokenArray memory token_ = tokensArray[_token_index];
 
-		token = IERC20(tokenAddress);
+		IERC20 token = IERC20(token_.tokenAddress);
+
 		return token.balanceOf(address(this));
 	}
 
@@ -154,9 +222,9 @@ contract PopUpStore {
 		address _token_address
 	) public isOwner {
 		require(_token_address != address(0), "Token not found");
-		tokenOptions[_token_name] = _token_address;
+
 		tokensArray.push(
-			tokenArray({ tokenName: _token_name, tokenAddress: _token_address })
+			TokenArray({ tokenName: _token_name, tokenAddress: _token_address })
 		);
 
 		// emit when token is added
@@ -166,33 +234,42 @@ contract PopUpStore {
 	/**
 	 * Function to add tokens payment can be recieve in
 	 *
-	 * @param _token_name (string memory) - name of token to check balance
-	 * @param _token_address (address memory) - name of token to check balance
+	 * @param _token_index (address memory) - index of token to delete
 	 */
-	function removePaymentToken(
-		string memory _token_name,
-		address _token_address,
-		uint256 index
-	) public isOwner {
-		require(tokenOptions[_token_name] != address(0), "Token not found");
-		require(index < tokensArray.length, "Token does not exist");
+	function removePaymentToken(uint256 _token_index) public isOwner {
+		require(_token_index < tokensArray.length, "Token does not exist");
 
 		// Swap the token to delete with the last token
-		tokensArray[index] = tokensArray[tokensArray.length - 1];
+		tokensArray[_token_index] = tokensArray[tokensArray.length - 1];
+
+		TokenArray memory token_ = tokensArray[tokensArray.length - 1];
 
 		tokensArray.pop();
 
-		delete tokenOptions[_token_name];
-
 		// emit when token is added
-		emit tokenRemove(_token_name, _token_address, block.timestamp);
+		emit tokenRemove(
+			token_.tokenName,
+			token_.tokenAddress,
+			block.timestamp
+		);
+	}
+
+	/**
+	 * Function to set price of item
+	 * @param _item_id id of item
+	 * @param _price price of item
+	 */
+	function setPrice(string memory _item_id, uint256 _price) public isOwner {
+		require(_price > 0, "Price can not be zero");
+
+		itemPrice[_item_id] = _price;
 	}
 
 	/**
 	 * Function to get all the values of the tokensArray
 	 */
 
-	function getPaymentTokens() public view returns (tokenArray[] memory) {
+	function getPaymentTokens() public view returns (TokenArray[] memory) {
 		return tokensArray;
 	}
 
@@ -200,8 +277,9 @@ contract PopUpStore {
 	 * Function that allows the owner to withdraw all the Ether in the contract
 	 * The function can only be called by the owner of the contract as defined by the isOwner modifier
 	 */
-	function withdraw() public isOwner {
-		(bool success, ) = owner.call{ value: address(this).balance }("");
+	function withdrawEth(uint256 _amount) public isOwner {
+		require(_amount > 0, "cannot withdraw 0 ETH");
+		(bool success, ) = owner.call{ value: _amount }("");
 		require(success, "Failed to send Ether");
 	}
 

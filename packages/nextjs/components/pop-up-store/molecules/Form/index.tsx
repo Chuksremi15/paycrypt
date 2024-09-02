@@ -1,5 +1,4 @@
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
-import { IntegerVariant, isValidInteger } from "~~/components/scaffold-eth";
+import { ChangeEvent, useCallback } from "react";
 
 export const TextInput = ({
   type,
@@ -41,7 +40,6 @@ export const TextInput = ({
 };
 
 export const TextSelect = ({
-  type,
   name,
   value,
   placeholder,
@@ -49,7 +47,6 @@ export const TextSelect = ({
   isDarkMode,
   tokens,
 }: {
-  type: React.HTMLInputTypeAttribute;
   name: string;
   value: string | number;
   placeholder: string;
@@ -86,8 +83,13 @@ export const TextSelect = ({
         } rounded-none py-3 px-4 bg-base-200  text-md focus:outline-none  transition-all duration-500`}
         autoComplete="off"
       >
-        <option value="">Select token to pay with</option>
-        {options && options.map(({ tokenName }) => <option value={tokenName}>{tokenName}</option>)}
+        <option value="">{placeholder}</option>
+        {options &&
+          options.map(({ tokenName }, index) => (
+            <option value={index} key={index}>
+              {tokenName}
+            </option>
+          ))}
       </select>
     </div>
   );

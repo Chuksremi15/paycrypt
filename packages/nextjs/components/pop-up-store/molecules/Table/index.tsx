@@ -50,7 +50,7 @@ export const TableBody = ({
     <tr className="border-b " key={index}>
       <td className="p-4 font-body">{index + 1}</td>
       <td className="p-4 font-body">{args.payersAddress}</td>
-      <td className="p-4  font-body"># {amount}</td>
+      <td className="p-4  font-body">${amount}</td>
       <td className="p-4 font-body">
         {dateString} {" at "} {timeString}
       </td>

@@ -1,11 +1,12 @@
-import { formatEther, formatUnits } from "viem";
+import { formatEther } from "viem";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
-export const GetBalanceCard = ({ tokenName }: { tokenName: string }) => {
+export const GetBalanceCard = ({ tokenName, tokenIndex }: { tokenName: string; tokenIndex: number }) => {
+  const tokenIndex_ = BigInt(tokenIndex || 0);
   const { data: balance } = useScaffoldReadContract({
     contractName: "PopUpStore",
     functionName: "getTokenBalance",
-    args: [tokenName],
+    args: [tokenIndex_],
   });
 
   return (

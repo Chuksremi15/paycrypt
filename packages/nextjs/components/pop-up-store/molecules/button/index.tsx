@@ -12,7 +12,7 @@ export const Button = ({
   return (
     <div
       onClick={action}
-      className={`button border ${
+      className={`flex items-center justify-center border cursor-pointer ${
         isDarkMode ? " border-white hover:bg-white hover:text-black" : " border-black hover:bg-black hover:text-white"
       } font-heading w-full h-10 text-md  transition-all duration-500`}
     >

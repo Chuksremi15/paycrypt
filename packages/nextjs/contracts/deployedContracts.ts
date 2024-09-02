@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     PopUpStore: {
-      address: "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+      address: "0x59b670e9fA9D0A427751Af201D676719a970857b",
       abi: [
         {
           inputs: [
@@ -19,6 +19,16 @@ const deployedContracts = {
             {
               internalType: "address",
               name: "_aggregator_address",
+              type: "address",
+            },
+            {
+              internalType: "string",
+              name: "_token_name",
+              type: "string",
+            },
+            {
+              internalType: "address",
+              name: "_token_address",
               type: "address",
             },
           ],
@@ -410,7 +420,7 @@ const deployedContracts = {
       inheritedFunctions: {},
     },
     USDT: {
-      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      address: "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d",
       abi: [
         {
           inputs: [],
@@ -592,6 +602,24 @@ const deployedContracts = {
               type: "bool",
             },
           ],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "to",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+          ],
+          name: "mint",
+          outputs: [],
           stateMutability: "nonpayable",
           type: "function",
         },

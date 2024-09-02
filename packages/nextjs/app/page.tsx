@@ -2,21 +2,36 @@
 
 import Link from "next/link";
 import type { NextPage } from "next";
+import { useTheme } from "next-themes";
 import { useAccount } from "wagmi";
 import { BugAntIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { Button } from "~~/components/pop-up-store/molecules/button";
 import { Address } from "~~/components/scaffold-eth";
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
 
+  const { resolvedTheme } = useTheme();
+  const isDarkMode = resolvedTheme === "dark";
+
   return (
     <>
       <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
+        <div className="">
           <h1 className="text-center">
-            <span className="block text-2xl mb-2">Welcome to</span>
-            <span className="block text-4xl font-bold">Scaffold-ETH 2</span>
+            <span className="block text-2xl mb-2 font-body">Welcome to</span>
+            <span className="font-heading block text-2xl opacity-80">Scaffold-ETH 2 POP UP STORE EXTENSION</span>
           </h1>
+
+          <div className="flex gap-x-4">
+            <Link href="/item/item1" passHref className="w-full">
+              <Button text="Go to Item" isDarkMode={isDarkMode} />
+            </Link>
+
+            <Link href="/admin" passHref className="w-full">
+              <Button text="Go to Admin" isDarkMode={isDarkMode} />
+            </Link>
+          </div>
           <div className="flex justify-center items-center space-x-2 flex-col sm:flex-row">
             <p className="my-2 font-medium">Connected Address:</p>
             <Address address={connectedAddress} />

@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { formatEther } from "viem";
 
-export const tableHeaders = ["S/N", "Name", "Amount", "Date"];
+export const tableHeaders = ["S/N", "Address", "Amount", "Token", "Date"];
 
 export const PaymentEventTable = ({
   headerContent,
@@ -33,8 +33,9 @@ export const TableBody = ({
   args: {
     payersAddress?: string | undefined;
     txDetails?: string | undefined;
-    productId?: string | undefined;
+    itemId?: string | undefined;
     amount?: bigint | undefined;
+    tokenName?: string | undefined;
     tokenAddress?: string | undefined;
     timestamp?: bigint | undefined;
   };
@@ -46,11 +47,14 @@ export const TableBody = ({
 
   const amount = args.amount && formatEther(args.amount);
 
+  console.log("arg: ", args);
+
   return (
     <tr className="border-b " key={index}>
       <td className="p-4 font-body">{index + 1}</td>
       <td className="p-4 font-body">{args.payersAddress}</td>
       <td className="p-4  font-body">${amount}</td>
+      <td className="p-4  font-body">{args.tokenName}</td>
       <td className="p-4 font-body">
         {dateString} {" at "} {timeString}
       </td>

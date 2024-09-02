@@ -9,6 +9,7 @@ import { TextSelect } from "~~/components/pop-up-store/molecules/Form";
 import { Button } from "~~/components/pop-up-store/molecules/button";
 import { useDeployedContractInfo, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { useGlobalState } from "~~/services/store/store";
+import { notification } from "~~/utils/scaffold-eth";
 
 const Page: NextPage = () => {
   const params = useParams<{ tag: string; itemId: string }>();
@@ -77,14 +78,14 @@ const Page: NextPage = () => {
             args: [popUpStoreData?.address, productPrice],
           });
 
-          const trxRef = await writeYourContractAsyncStore({
+          await writeYourContractAsyncStore({
             functionName: "payWithToken",
             args: [productPrice, BigInt(paymentForm.tokenIndex), params.itemId],
           });
 
-          if (trxRef) {
-            console.log("payment successful");
-          }
+          notification.success(<div className="text-xl font-body">Payment successful</div>, {
+            icon: "🎉",
+          });
 
           setPaymentLoading(false);
         }
@@ -103,7 +104,9 @@ const Page: NextPage = () => {
         </div>
         <div className="">
           <h4 className="font-heading text-xl opacity-80">Vamtac Graphic Tees Mens Vintage Oversized T Shirts</h4>
-          <p className="font-body text-2xl">${productPrice && formatEther(productPrice)}</p>
+          <p className="font-body text-2xl">
+            $ {productPrice && Number(formatEther(productPrice)) > 0 ? formatEther(productPrice) : "0"}
+          </p>
           <p className="text-body text-lg">About this item</p>
           <p className="text-body">
             Soft and comfortable: Made of 100% pure cotton, this t shirt is soft, lightweight and comfortable to wear.

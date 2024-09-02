@@ -122,6 +122,8 @@ const Page: NextPage = () => {
 
   console.log("tokens: ", tokens);
 
+  console.log("Events: ", events);
+
   return (
     <div className="container mx-auto max-w-6xl py-8 px-8 flex flex-col gap-y-10">
       {" "}

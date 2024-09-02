@@ -2,7 +2,6 @@
 pragma solidity >=0.8.0 <0.9.0;
 
 // Useful for debugging. Remove when deploying to a live network.
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 // Use openzeppelin to inherit battle-tested implementations (ERC20, ERC721, etc)
@@ -35,9 +34,9 @@ contract PopUpStore {
 	event PaymentReceive(
 		address indexed payersAddress,
 		string txDetails,
+		string tokenName,
 		string indexed itemId,
 		uint256 amount,
-		string indexed tokenName,
 		address tokenAddress,
 		uint256 timestamp
 	);
@@ -131,9 +130,9 @@ contract PopUpStore {
 		emit PaymentReceive(
 			msg.sender,
 			"Payment Received",
+			token_.tokenName,
 			_itemId,
 			_amount,
-			token_.tokenName,
 			token_.tokenAddress,
 			block.timestamp
 		);
@@ -158,9 +157,9 @@ contract PopUpStore {
 		emit PaymentReceive(
 			msg.sender,
 			"Payment Received",
+			"ETH",
 			_itemId,
 			msg.value,
-			"ETH",
 			msg.sender,
 			block.timestamp
 		);

@@ -20,7 +20,9 @@ const Home: NextPage = () => {
         <div className="">
           <h1 className="text-center">
             <span className="block text-2xl mb-2 font-body">Welcome to</span>
-            <span className="font-heading block text-2xl opacity-80">Scaffold-ETH 2 POP UP STORE EXTENSION</span>
+            <span className="font-heading block text-2xl opacity-80 max-w-sm mx-auto">
+              Scaffold-ETH 2 POP UP STORE EXTENSION
+            </span>
           </h1>
 
           <div className="flex gap-x-4">
